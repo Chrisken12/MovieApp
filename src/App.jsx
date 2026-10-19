@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link, Route, Routes, useParams } from "react-router-dom";
 import MovieList from "./components/MovieList";
 import Filter from "./components/Filter";
 import "./App.css";
@@ -14,6 +15,7 @@ const starterMovies = [
     rating: 4.8,
     year: 2024,
     genre: "SCI-FI · ADVENTURE",
+    trailerURL: "https://www.youtube.com/embed/Way9Dexny3w",
   },
   {
     id: "m2",
@@ -25,17 +27,18 @@ const starterMovies = [
     rating: 4.6,
     year: 2014,
     genre: "COMEDY · DRAMA",
+    trailerURL: "https://www.youtube.com/embed/1Fg5iWmQjwk",
   },
   {
     id: "m3",
     title: "Interstellar",
     description:
       "A team of explorers travels beyond this galaxy to discover whether mankind has a future among the stars.",
-    posterURL:
-      "https://i.imgur.com/KuN7a6b.jpg",
+    posterURL: "https://i.imgur.com/KuN7a6b.jpg",
     rating: 4.9,
     year: 2014,
     genre: "SCI-FI · DRAMA",
+    trailerURL: "https://www.youtube.com/embed/zSWdZVtXT7E",
   },
   {
     id: "m4",
@@ -47,6 +50,7 @@ const starterMovies = [
     rating: 4.4,
     year: 2023,
     genre: "ROMANCE · DRAMA",
+    trailerURL: "https://www.youtube.com/embed/kA244xewjcI",
   },
   {
     id: "m5",
@@ -58,6 +62,7 @@ const starterMovies = [
     rating: 4.7,
     year: 2023,
     genre: "ANIMATION · ACTION",
+    trailerURL: "https://www.youtube.com/embed/cqGjhVJWtEg",
   },
   {
     id: "m6",
@@ -69,21 +74,257 @@ const starterMovies = [
     rating: 4.2,
     year: 2019,
     genre: "THRILLER · DRAMA",
+    trailerURL: "https://www.youtube.com/embed/Hyag7lR8CPA",
   },
 ];
 
 function readMovies() {
   try {
     const saved = localStorage.getItem("reelgood-movies");
-    if (!saved) return starterMovies
-    const savedMovies = JSON.parse(saved)
-    return savedMovies.map((movie) => {
-      const updatedPoster = starterMovies.find((starter) => starter.id === movie.id)?.posterURL
-      return updatedPoster ? { ...movie, posterURL: updatedPoster } : movie
+    if (!saved) return starterMovies;
+    return JSON.parse(saved).map((movie) => {
+      const starter = starterMovies.find((item) => item.id === movie.id);
+      return starter
+        ? {
+            ...starter,
+            ...movie,
+            posterURL: starter.posterURL,
+            trailerURL: movie.trailerURL || starter.trailerURL,
+          }
+        : movie;
     });
   } catch {
     return starterMovies;
   }
+}
+
+function SiteHeader() {
+  return (
+    <header className="topbar">
+      <Link className="brand" to="/" aria-label="Reelgood home">
+        <span className="brand-mark">
+          r<span>.</span>
+        </span>
+        <span>reelgood</span>
+      </Link>
+      <nav className="topnav" aria-label="Main navigation">
+        <Link className="active" to="/">
+          Discover
+        </Link>
+        <Link to="/#collection">My collection</Link>
+      </nav>
+      <button
+        className="profile-button"
+        type="button"
+        aria-label="Your profile"
+      >
+        A
+      </button>
+    </header>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <Link className="brand footer-brand" to="/">
+        <span className="brand-mark">
+          r<span>.</span>
+        </span>
+        <span>reelgood</span>
+      </Link>
+      <span>KEEP THE CREDITS ROLLING.</span>
+      <span>© 2025 REELGOOD CLUB</span>
+    </footer>
+  );
+}
+
+function CollectionPage({
+  movies,
+  titleFilter,
+  setTitleFilter,
+  minRating,
+  setMinRating,
+  onAdd,
+}) {
+  const visibleMovies = useMemo(
+    () =>
+      movies.filter((movie) => {
+        const matchesTitle = movie.title
+          .toLowerCase()
+          .includes(titleFilter.trim().toLowerCase());
+        const matchesRating =
+          minRating === "all" || movie.rating >= Number(minRating);
+        return matchesTitle && matchesRating;
+      }),
+    [movies, titleFilter, minRating],
+  );
+  const average = movies.length
+    ? (
+        movies.reduce((sum, movie) => sum + Number(movie.rating), 0) /
+        movies.length
+      ).toFixed(1)
+    : "—";
+
+  return (
+    <>
+      <section className="hero">
+        <div className="hero-copy">
+          <div className="eyebrow">
+            <span className="eyebrow-line" /> YOUR PERSONAL SCREENING ROOM
+          </div>
+          <h1>
+            Stories worth
+            <br />
+            <em>staying in for.</em>
+          </h1>
+          <p>
+            A little corner of the internet for the films and shows you love.
+          </p>
+          <a className="hero-link" href="#collection">
+            Explore your collection <span>↘</span>
+          </a>
+        </div>
+        <div className="hero-art" aria-hidden="true">
+          <div className="hero-glow" />
+          <div className="film-frame frame-back">
+            <div className="frame-image frame-image-back" />
+          </div>
+          <div className="film-frame frame-front">
+            <div className="frame-image frame-image-front" />
+            <span className="frame-caption">
+              THE ART OF
+              <br />
+              GETTING LOST
+            </span>
+          </div>
+          <div className="hero-orbit orbit-one" />
+          <div className="hero-orbit orbit-two" />
+          <span className="hero-spark">✳</span>
+          <span className="hero-stamp">
+            ISSUE
+            <br />
+            <b>№ 06</b>
+          </span>
+        </div>
+        <div className="hero-index">
+          <span>01</span>
+          <span className="index-rule" />
+          <span>06</span>
+        </div>
+      </section>
+      <section id="collection" className="collection-section">
+        <div className="section-heading">
+          <div>
+            <div className="eyebrow dark-eyebrow">
+              <span className="eyebrow-line" /> THE GOOD STUFF
+            </div>
+            <h2>
+              Your collection<span className="heading-period">.</span>
+            </h2>
+          </div>
+          <div className="collection-note">
+            A running list of things
+            <br />
+            you loved watching.
+          </div>
+        </div>
+        <div className="collection-toolbar">
+          <div className="collection-count">
+            <strong>{String(movies.length).padStart(2, "0")}</strong>
+            <span>FILMS & SHOWS</span>
+          </div>
+          <Filter
+            title={titleFilter}
+            rate={minRating}
+            onTitleChange={setTitleFilter}
+            onRateChange={setMinRating}
+          />
+          <button className="add-button" type="button" onClick={onAdd}>
+            <span>＋</span> Add a title
+          </button>
+        </div>
+        <MovieList movies={visibleMovies} />
+        {movies.length > 0 && (
+          <div className="collection-footer">
+            <span>
+              YOUR AVERAGE RATING <b>★ {average}</b>
+            </span>
+            <span>MADE FOR THE LOVE OF FILM&nbsp; ↗</span>
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
+
+function MovieDetailPage({ movies }) {
+  const { id } = useParams();
+  const movie = movies.find((item) => item.id === id);
+  if (!movie)
+    return (
+      <section className="detail-not-found">
+        <div className="eyebrow dark-eyebrow">
+          <span className="eyebrow-line" /> NOT ON THIS REEL
+        </div>
+        <h1>Movie not found.</h1>
+        <Link className="back-link" to="/">
+          ← Back to collection
+        </Link>
+      </section>
+    );
+
+  return (
+    <section className="detail-page">
+      <Link className="back-link" to="/">
+        ← Back to collection
+      </Link>
+      <div className="detail-layout">
+        <div className="detail-poster-wrap">
+          <img
+            className="detail-poster"
+            src={movie.posterURL}
+            alt={`Poster artwork for ${movie.title}`}
+          />
+          <span className="poster-rating">
+            <span>★</span> {Number(movie.rating).toFixed(1)}
+          </span>
+        </div>
+        <div className="detail-copy">
+          <div className="eyebrow dark-eyebrow">
+            <span className="eyebrow-line" /> {movie.genre || "YOUR COLLECTION"}
+          </div>
+          <h1>
+            {movie.title}
+            <span className="heading-period">.</span>
+          </h1>
+          <div className="detail-year">
+            {movie.year} <span>·</span> YOUR COLLECTION
+          </div>
+          <p className="detail-description">{movie.description}</p>
+          <div className="trailer-heading">
+            <span className="eyebrow-line" />
+            <span>OFFICIAL TRAILER</span>
+          </div>
+          {movie.trailerURL ? (
+            <div className="trailer-frame">
+              <iframe
+                src={movie.trailerURL}
+                title={`${movie.title} trailer`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="trailer-empty">
+              No trailer has been added for this title yet.
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function App() {
@@ -96,23 +337,12 @@ function App() {
     description: "",
     posterURL: "",
     rating: "4.0",
+    trailerURL: "",
   });
 
-  useEffect(() => {
-    localStorage.setItem("reelgood-movies", JSON.stringify(movies));
-  }, [movies]);
-
-  const visibleMovies = useMemo(
-    () =>
-      movies.filter((movie) => {
-        const matchesTitle = movie.title
-          .toLowerCase()
-          .includes(titleFilter.trim().toLowerCase());
-        const matchesRating =
-          minRating === "all" || movie.rating >= Number(minRating);
-        return matchesTitle && matchesRating;
-      }),
-    [movies, titleFilter, minRating],
+  useEffect(
+    () => localStorage.setItem("reelgood-movies", JSON.stringify(movies)),
+    [movies],
   );
 
   const addMovie = (event) => {
@@ -126,149 +356,55 @@ function App() {
       posterURL:
         form.posterURL.trim() ||
         "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=85",
+      trailerURL: form.trailerURL.trim(),
     };
     setMovies((current) => [newMovie, ...current]);
-    setForm({ title: "", description: "", posterURL: "", rating: "4.0" });
+    setForm({
+      title: "",
+      description: "",
+      posterURL: "",
+      rating: "4.0",
+      trailerURL: "",
+    });
     setIsAdding(false);
   };
 
-  const average = movies.length
-    ? (
-        movies.reduce((sum, movie) => sum + movie.rating, 0) / movies.length
-      ).toFixed(1)
-    : "—";
-
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="Reelgood home">
-          <span className="brand-mark">
-            r<span>.</span>
-          </span>
-          <span>reelgood</span>
-        </a>
-        <nav className="topnav" aria-label="Main navigation">
-          <a className="active" href="#collection">
-            Discover
-          </a>
-          <a href="#collection">My collection</a>
-        </nav>
-        <button
-          className="profile-button"
-          type="button"
-          aria-label="Your profile"
-        >
-          A
-        </button>
-      </header>
-
+      <SiteHeader />
       <main id="top">
-        <section className="hero">
-          <div className="hero-copy">
-            <div className="eyebrow">
-              <span className="eyebrow-line" /> YOUR PERSONAL SCREENING ROOM
-            </div>
-            <h1>
-              Stories worth
-              <br />
-              <em>staying in for.</em>
-            </h1>
-            <p>
-              A little corner of the internet for the films and shows you love.
-            </p>
-            <a className="hero-link" href="#collection">
-              Explore your collection <span>↘</span>
-            </a>
-          </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="hero-glow" />
-            <div className="film-frame frame-back">
-              <div className="frame-image frame-image-back" />
-            </div>
-            <div className="film-frame frame-front">
-              <div className="frame-image frame-image-front" />
-              <span className="frame-caption">
-                THE ART OF
-                <br />
-                GETTING LOST
-              </span>
-            </div>
-            <div className="hero-orbit orbit-one" />
-            <div className="hero-orbit orbit-two" />
-            <span className="hero-spark">✳</span>
-            <span className="hero-stamp">
-              ISSUE
-              <br />
-              <b>№ 06</b>
-            </span>
-          </div>
-          <div className="hero-index">
-            <span>01</span>
-            <span className="index-rule" />
-            <span>06</span>
-          </div>
-        </section>
-
-        <section id="collection" className="collection-section">
-          <div className="section-heading">
-            <div>
-              <div className="eyebrow dark-eyebrow">
-                <span className="eyebrow-line" /> THE GOOD STUFF
-              </div>
-              <h2>
-                Your collection<span className="heading-period">.</span>
-              </h2>
-            </div>
-            <div className="collection-note">
-              A running list of things
-              <br />
-              you loved watching.
-            </div>
-          </div>
-
-          <div className="collection-toolbar">
-            <div className="collection-count">
-              <strong>{String(movies.length).padStart(2, "0")}</strong>
-              <span>FILMS & SHOWS</span>
-            </div>
-            <Filter
-              title={titleFilter}
-              rate={minRating}
-              onTitleChange={setTitleFilter}
-              onRateChange={setMinRating}
-            />
-            <button
-              className="add-button"
-              type="button"
-              onClick={() => setIsAdding(true)}
-            >
-              <span>＋</span> Add a title
-            </button>
-          </div>
-
-          <MovieList movies={visibleMovies} />
-          {movies.length > 0 && (
-            <div className="collection-footer">
-              <span>
-                YOUR AVERAGE RATING <b>★ {average}</b>
-              </span>
-              <span>MADE FOR THE LOVE OF FILM&nbsp; ↗</span>
-            </div>
-          )}
-        </section>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <CollectionPage
+                movies={movies}
+                titleFilter={titleFilter}
+                setTitleFilter={setTitleFilter}
+                minRating={minRating}
+                setMinRating={setMinRating}
+                onAdd={() => setIsAdding(true)}
+              />
+            }
+          />
+          <Route
+            path="/movie/:id"
+            element={<MovieDetailPage movies={movies} />}
+          />
+          <Route
+            path="*"
+            element={
+              <section className="detail-not-found">
+                <h1>Page not found.</h1>
+                <Link className="back-link" to="/">
+                  ← Back to collection
+                </Link>
+              </section>
+            }
+          />
+        </Routes>
       </main>
-
-      <footer className="site-footer">
-        <a className="brand footer-brand" href="#top">
-          <span className="brand-mark">
-            r<span>.</span>
-          </span>
-          <span>reelgood</span>
-        </a>
-        <span>KEEP THE CREDITS ROLLING.</span>
-        <span>© 2025 REELGOOD CLUB</span>
-      </footer>
-
+      <SiteFooter />
       {isAdding && (
         <div
           className="modal-backdrop"
@@ -338,6 +474,18 @@ function App() {
                 />
               </label>
               <label>
+                Trailer embed URL{" "}
+                <span className="optional-label">OPTIONAL</span>
+                <input
+                  type="url"
+                  value={form.trailerURL}
+                  onChange={(e) =>
+                    setForm({ ...form, trailerURL: e.target.value })
+                  }
+                  placeholder="https://www.youtube.com/embed/…"
+                />
+              </label>
+              <label>
                 Your rating{" "}
                 <span className="rating-input">
                   <span>★</span>
@@ -377,4 +525,3 @@ function App() {
 }
 
 export default App;
-
